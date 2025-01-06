@@ -4,7 +4,7 @@ import { FourwingsHeatmapTileLayerProps } from "../layers/fourwings-heatmap.type
 import { FourwingsHeatmapTileLayer } from "../layers/FourwingsHeatmapTileLayer";
 import { BaseMapLayer } from "../layers/BasemapLayer";
 import { Timebar, TimebarProps } from "@globalfishingwatch/timebar";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router";
 import {
   FOURWINGS_INTERVALS_ORDER,
@@ -40,27 +40,31 @@ function Main() {
     }
   }, [searchParams]);
 
-  const fourwingsLayerProps: FourwingsHeatmapTileLayerProps = {
-    id: "ais",
-    startTime: getUTCDateTime(start).toMillis(),
-    endTime: getUTCDateTime(end).toMillis(),
-    sublayers: [
-      {
-        id: "presence",
-        visible: true,
-        datasets: ["public-global-presence:v3.0"],
-        color: "#FF64CE",
-        colorRamp: "magenta",
-      },
-    ],
-    visible: true,
-  };
+  const fourwingsLayerProps: FourwingsHeatmapTileLayerProps = useMemo(() => {
+    return {
+      id: "ais",
+      startTime: getUTCDateTime(start).toMillis(),
+      endTime: getUTCDateTime(end).toMillis(),
+      sublayers: [
+        {
+          id: "presence",
+          visible: true,
+          datasets: ["public-global-presence:v3.0"],
+          color: "#FF64CE",
+          colorRamp: "magenta",
+        },
+      ],
+      visible: true,
+    };
+  }, [start, end]);
 
   // TODO: sync state with sidebar
-  const layers = [
-    isSatellite ? new SatelliteLayer() : new BaseMapLayer(),
-    new FourwingsHeatmapTileLayer(fourwingsLayerProps),
-  ];
+  const layers = useMemo(() => {
+    return [
+      isSatellite ? new SatelliteLayer() : new BaseMapLayer(),
+      new FourwingsHeatmapTileLayer(fourwingsLayerProps),
+    ];
+  }, [fourwingsLayerProps, isSatellite]);
 
   const onChange: TimebarProps["onChange"] = (e) => {
     setRange({ start: e.start, end: e.end });
