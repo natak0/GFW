@@ -4,7 +4,8 @@ import { FourwingsHeatmapTileLayerProps } from '../layers/fourwings-heatmap.type
 import { FourwingsHeatmapTileLayer } from '../layers/FourwingsHeatmapTileLayer';
 import { BaseMapLayer } from '../layers/BasemapLayer';
 import { Timebar, TimebarProps } from '@globalfishingwatch/timebar';
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { useSearchParams } from 'react-router';
 import {
   FOURWINGS_INTERVALS_ORDER,
   getFourwingsInterval,
@@ -24,33 +25,46 @@ const AVAILABLE_START = '2020-01-01T00:00:00.000Z';
 const AVAILABLE_END = new Date().toISOString();
 
 function Main() {
-  const isSatellite = false; // TODO: sync state with sidebar
+  const [searchParams] = useSearchParams();
   const [{ start, end }, setRange] = useState<{ start: string; end: string }>({
     start: '2024-01-01T00:00:00.000Z',
     end: '2024-04-01T00:00:00.000Z',
   });
 
-  const fourwingsLayerProps: FourwingsHeatmapTileLayerProps = {
-    id: 'ais',
-    startTime: getUTCDateTime(start).toMillis(),
-    endTime: getUTCDateTime(end).toMillis(),
-    sublayers: [
-      {
-        id: 'presence',
-        visible: true,
-        datasets: ['public-global-presence:v3.0'],
-        color: '#FF64CE',
-        colorRamp: 'magenta',
-      },
-    ],
-    visible: true,
-  };
+  const [isSatellite, setIsSatellite] = useState<boolean>(false);
+
+  useEffect(() => {
+    const satelliteParam = searchParams.get('satellite');
+    if (satelliteParam) {
+      setIsSatellite(satelliteParam === 'true');
+    }
+  }, [searchParams]);
+
+  const fourwingsLayerProps: FourwingsHeatmapTileLayerProps = useMemo(() => {
+    return {
+      id: 'ais',
+      startTime: getUTCDateTime(start).toMillis(),
+      endTime: getUTCDateTime(end).toMillis(),
+      sublayers: [
+        {
+          id: 'presence',
+          visible: true,
+          datasets: ['public-global-presence:v3.0'],
+          color: '#FF64CE',
+          colorRamp: 'magenta',
+        },
+      ],
+      visible: true,
+    };
+  }, [start, end]);
 
   // TODO: sync state with sidebar
-  const layers = [
-    isSatellite ? new SatelliteLayer() : new BaseMapLayer(),
-    new FourwingsHeatmapTileLayer(fourwingsLayerProps),
-  ];
+  const layers = useMemo(() => {
+    return [
+      isSatellite ? new SatelliteLayer() : new BaseMapLayer(),
+      new FourwingsHeatmapTileLayer(fourwingsLayerProps),
+    ];
+  }, [fourwingsLayerProps, isSatellite]);
 
   const onChange: TimebarProps['onChange'] = (e) => {
     setRange({ start: e.start, end: e.end });
@@ -70,7 +84,7 @@ function Main() {
           absoluteStart={AVAILABLE_START}
           absoluteEnd={AVAILABLE_END}
           onChange={onChange}
-          bookmarkPlacement="bottom"
+          bookmarkPlacement='bottom'
           minimumRange={1}
           intervals={FOURWINGS_INTERVALS_ORDER}
           getCurrentInterval={getFourwingsInterval}
