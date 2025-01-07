@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router";
-import { Logo, SwitchRow } from "@globalfishingwatch/ui-components";
-import styles from "./Sidebar.module.css";
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router';
+import { Logo, SwitchRow } from '@globalfishingwatch/ui-components';
+import styles from './Sidebar.module.css';
 
 function Sidebar() {
   const [activePresence, setActivePresence] = useState(true);
@@ -9,20 +9,20 @@ function Sidebar() {
   const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
-    if (!searchParams.has("presence") && !searchParams.has("satellite")) {
-      searchParams.set("presence", "true");
-      searchParams.set("satellite", "false");
+    if (!searchParams.has('presence') && !searchParams.has('satellite')) {
+      searchParams.set('presence', 'true');
+      searchParams.set('satellite', 'false');
     }
   }, []);
 
   useEffect(() => {
-    const presenceParam = searchParams.get("presence");
-    const satelliteParam = searchParams.get("satellite");
+    const presenceParam = searchParams.get('presence');
+    const satelliteParam = searchParams.get('satellite');
     if (presenceParam) {
-      setActivePresence(presenceParam === "true");
+      setActivePresence(presenceParam === 'true');
     }
     if (satelliteParam) {
-      setActiveSatellite(satelliteParam === "true");
+      setActiveSatellite(satelliteParam === 'true');
     }
   }, [searchParams]);
 
@@ -51,16 +51,16 @@ function Sidebar() {
         <SwitchRow
           active={activePresence}
           onClick={handlePresenceToggle}
-          tooltip="Toggle layer visibility"
-          tooltipPlacement="top"
-          label="Presence"
+          tooltip='Toggle layer visibility'
+          tooltipPlacement='top'
+          label='Presence'
         />
         <SwitchRow
           active={activeSatellite}
           onClick={handleSatelliteToggle}
-          tooltip="Toggle layer visibility"
-          tooltipPlacement="top"
-          label="Satellite"
+          tooltip='Toggle layer visibility'
+          tooltipPlacement='top'
+          label='Satellite'
         />
       </div>
     </div>
